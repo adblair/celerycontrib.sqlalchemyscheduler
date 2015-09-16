@@ -12,6 +12,8 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
     database_url = 'sqlite:///celerybeat-schedule.sqlite'
 
     _session = None
+    _tasks_last_modified = None
+    sync_every_tasks = 50
 
     @property
     def session(self):
@@ -47,6 +49,7 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
                 model.PeriodicTask.name == name
             ).first()
             if task is not None:
+                # TODO: Don't let this affect date_changed, somehow
                 task.last_run_at = entry.last_run_at
                 task.total_run_count = entry.total_run_count
         self.session.commit()
@@ -59,6 +62,24 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
         super(SQLAlchemyScheduler, self).sync()
         self.save_entries()
         self.load_entries()
+
+    def get_tasks_last_modified(self):
+        return self.session.query(
+            sqla.func.max(model.PeriodicTask.date_changed)
+        ).scalar()
+
+    def should_sync(self):
+        if super(SQLAlchemyScheduler, self).should_sync():
+            return True
+        else:
+            self.logger.debug('Checking if database sync needed')
+            tasks_last_modified = self.get_tasks_last_modified()
+            if self._tasks_last_modified is None:
+                should = True
+            else:
+                should = (tasks_last_modified > self._tasks_last_modified)
+            self._tasks_last_modified = tasks_last_modified
+            return should
 
     def close(self):
         super(SQLAlchemyScheduler, self).close()
