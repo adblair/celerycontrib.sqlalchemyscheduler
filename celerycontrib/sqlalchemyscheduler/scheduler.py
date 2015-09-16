@@ -21,7 +21,7 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
             self._session = Session()
         return self._session
 
-    def get_periodic_tasks(self):
+    def generate_entry_dicts(self):
         for periodic_task in self.session.query(model.PeriodicTask):
             yield periodic_task.name, dict(
                 task=periodic_task.task,
@@ -38,12 +38,10 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
                 total_run_count=periodic_task.total_run_count,
             )
 
-    def setup_schedule(self):
-        super(SQLAlchemyScheduler, self).setup_schedule()
-        self.merge_inplace(dict(self.get_periodic_tasks()))
+    def load_entries(self):
+        self.merge_inplace(dict(self.generate_entry_dicts()))
 
-    def sync(self):
-        super(SQLAlchemyScheduler, self).sync()
+    def save_entries(self):
         for name, entry in self.schedule.items():
             task = self.session.query(model.PeriodicTask).filter(
                 model.PeriodicTask.name == name
@@ -52,6 +50,15 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
                 task.last_run_at = entry.last_run_at
                 task.total_run_count = entry.total_run_count
         self.session.commit()
+
+    def setup_schedule(self):
+        super(SQLAlchemyScheduler, self).setup_schedule()
+        self.sync()
+
+    def sync(self):
+        super(SQLAlchemyScheduler, self).sync()
+        self.save_entries()
+        self.load_entries()
 
     def close(self):
         super(SQLAlchemyScheduler, self).close()
