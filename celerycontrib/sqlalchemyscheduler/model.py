@@ -82,7 +82,7 @@ class PeriodicTask(Base):
     )
     interval_schedule = orm.relationship(
         'IntervalSchedule',
-        backref='periodic_task',
+        backref=orm.backref('periodic_task', uselist=False),
     )
     crontab_schedule_id = sqla.Column(
         sqla.Integer,
@@ -91,7 +91,7 @@ class PeriodicTask(Base):
     )
     crontab_schedule = orm.relationship(
         'CrontabSchedule',
-        backref='periodic_task',
+        backref=orm.backref('periodic_task', uselist=False),
     )
     args = sqla.Column(
         sqla.String,
