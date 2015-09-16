@@ -34,6 +34,8 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
                     routing_key=periodic_task.routing_key,
                     expires=periodic_task.expires,
                 ),
+                last_run_at=periodic_task.last_run_at,
+                total_run_count=periodic_task.total_run_count,
             )
 
     def setup_schedule(self):
