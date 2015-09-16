@@ -1,0 +1,2 @@
+celery==3.1.18
+sqlalchemy==1.0.8

@@ -1,0 +1,5 @@
+include README.rst
+include HISTORY.rst
+include requirements*
+include *.py
+include *.ini
