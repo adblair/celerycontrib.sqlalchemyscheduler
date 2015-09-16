@@ -9,7 +9,7 @@ from . import model
 
 class SQLAlchemyScheduler(celery.beat.Scheduler):
 
-    database_url = 'sqlite:///data.sqlite'
+    database_url = 'sqlite:///celerybeat-schedule.sqlite'
 
     _session = None
 
