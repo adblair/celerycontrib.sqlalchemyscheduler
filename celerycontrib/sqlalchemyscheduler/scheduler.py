@@ -13,7 +13,6 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
 
     _session = None
     _tasks_last_modified = None
-    sync_every_tasks = 50
 
     @property
     def session(self):
