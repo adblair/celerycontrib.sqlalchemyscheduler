@@ -24,7 +24,9 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
         return self._session
 
     def generate_entry_dicts(self):
-        for periodic_task in self.session.query(model.PeriodicTask):
+        query = self.session.query(model.PeriodicTask).filter(
+            model.PeriodicTask.enabled)
+        for periodic_task in query:
             yield periodic_task.name, dict(
                 task=periodic_task.task,
                 schedule=periodic_task.schedule,
