@@ -134,10 +134,10 @@ class PeriodicTask(Base):
 
     def __str__(self):
         fmt = '{0.name}: {{no schedule}}'
-        if self.interval:
-            fmt = '{0.name}: {0.interval}'
-        if self.crontab:
-            fmt = '{0.name}: {0.crontab}'
+        if self.interval_schedule:
+            fmt = '{0.name}: {0.interval_schedule}'
+        if self.crontab_schedule:
+            fmt = '{0.name}: {0.crontab_schedule}'
         return fmt.format(self)
 
     @property
