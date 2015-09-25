@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 
 requirements = [
     'celery',
+    'pretty_cron',
     'sqlalchemy',
 ]
 

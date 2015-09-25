@@ -105,6 +105,11 @@ class ScheduleView(ModelView):
 
     form_excluded_columns = ['periodic_tasks']
 
+    def get_list_columns(self):
+        return [
+            ('description', self.get_column_name('description'))
+        ] + super(ScheduleView, self).get_list_columns()
+
 
 admin = Admin(
     flask,

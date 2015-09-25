@@ -6,6 +6,7 @@ import itertools
 import json
 
 import celery.schedules
+import pretty_cron
 import sqlalchemy as sqla
 from sqlalchemy import orm
 from sqlalchemy.ext import declarative
@@ -30,14 +31,18 @@ class IntervalSchedule(Base):
             datetime.timedelta(**{self.period: self.every})
         )
 
-    def __str__(self):
+    @property
+    def period_singular(self):
+        return self.period[:-1]
+
+    @property
+    def description(self):
         if self.every == 1:
             return 'every {0.period_singular}'.format(self)
         return 'every {0.every} {0.period}'.format(self)
 
-    @property
-    def period_singular(self):
-        return self.period[:-1]
+    def __str__(self):
+        return self.description
 
 
 class CrontabSchedule(Base):
@@ -50,12 +55,14 @@ class CrontabSchedule(Base):
     day_of_month = sqla.Column(sqla.String(64), default='*')
     month_of_year = sqla.Column(sqla.String(64), default='*')
 
-    def __str__(self):
+    @property
+    def description(self):
         rfield = lambda f: f and str(f).replace(' ', '') or '*'
-        return '{0} {1} {2} {3} {4} (m/h/d/dM/MY)'.format(
+        string = '{0} {1} {2} {3} {4}'.format(
             rfield(self.minute), rfield(self.hour), rfield(self.day_of_week),
             rfield(self.day_of_month), rfield(self.month_of_year),
         )
+        return pretty_cron.prettify_cron(string)
 
     @property
     def schedule(self):
@@ -66,6 +73,9 @@ class CrontabSchedule(Base):
             day_of_month=self.day_of_month,
             month_of_year=self.month_of_year,
         )
+
+    def __str__(self):
+        return self.description
 
 
 class PeriodicTask(Base):
