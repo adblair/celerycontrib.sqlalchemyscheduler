@@ -15,7 +15,7 @@ history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='celerycontrib.sqlalchemyscheduler',
-    version='0.1.0-dev0',
+    version='0.1.0',
     packages=find_packages(),
     namespace_packages=['celerycontrib'],
     include_package_data=True,
