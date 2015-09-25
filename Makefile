@@ -78,6 +78,7 @@ release: clean test-all
 	bumpversion release
 	python setup.py bdist_wheel upload
 	bumpversion --no-tag patch
+	git push
 	git push --tags
 
 bumpminor:
