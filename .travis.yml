@@ -6,6 +6,6 @@ env:
   - TOX_ENV=py27
   - TOX_ENV=py26
   - TOX_ENV=style
-  - TOX_ENV=coverage
+  - TOX_ENV=coveralls
 install: pip install tox
 script: tox -e $TOX_ENV
