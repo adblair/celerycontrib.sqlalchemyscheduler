@@ -22,19 +22,19 @@ def example_database():
         model.PeriodicTask(
             name='example1',
             task='example1',
-            interval_schedule=model.IntervalSchedule(
+            interval_schedules=[model.IntervalSchedule(
                 every=1,
                 period='minutes',
-            ),
+            )],
             args='[1]',
         ),
         model.PeriodicTask(
             name='example2',
             task='example2',
-            interval_schedule=model.IntervalSchedule(
+            interval_schedules=[model.IntervalSchedule(
                 every=1,
                 period='minutes',
-            ),
+            )],
             args='[1]',
             enabled=False,
         ),

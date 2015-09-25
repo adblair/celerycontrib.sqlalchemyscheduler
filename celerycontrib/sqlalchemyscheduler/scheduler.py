@@ -26,20 +26,21 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
         query = self.session.query(model.PeriodicTask).filter(
             model.PeriodicTask.enabled)
         for periodic_task in query:
-            yield periodic_task.name, dict(
-                task=periodic_task.task,
-                schedule=periodic_task.schedule.schedule,
-                args=json.loads(periodic_task.args or 'null'),
-                kwargs=json.loads(periodic_task.kwargs or 'null'),
-                options=dict(
-                    queue=periodic_task.queue,
-                    exchange=periodic_task.exchange,
-                    routing_key=periodic_task.routing_key,
-                    expires=periodic_task.expires,
-                ),
-                last_run_at=periodic_task.last_run_at,
-                total_run_count=periodic_task.total_run_count,
-            )
+            for schedule in periodic_task.schedules:
+                yield periodic_task.name, dict(
+                    task=periodic_task.task,
+                    schedule=schedule.schedule,
+                    args=json.loads(periodic_task.args or 'null'),
+                    kwargs=json.loads(periodic_task.kwargs or 'null'),
+                    options=dict(
+                        queue=periodic_task.queue,
+                        exchange=periodic_task.exchange,
+                        routing_key=periodic_task.routing_key,
+                        expires=periodic_task.expires,
+                    ),
+                    last_run_at=periodic_task.last_run_at,
+                    total_run_count=periodic_task.total_run_count,
+                )
 
     def load_entries(self):
         self.merge_inplace(dict(self.generate_entry_dicts()))

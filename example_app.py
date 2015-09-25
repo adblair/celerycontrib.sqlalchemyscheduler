@@ -2,6 +2,8 @@
 from celery import Celery
 from celerycontrib.sqlalchemyscheduler import (
     Base,
+    CrontabSchedule,
+    IntervalSchedule,
     PeriodicTask,
     SQLAlchemyScheduler,
 )
@@ -64,8 +66,8 @@ class PeriodicTaskView(ModelView):
         'task',
         'args',
         'kwargs',
-        'interval_schedule',
-        'crontab_schedule',
+        'interval_schedules',
+        'crontab_schedules',
         'expires',
         'enabled',
         'queue',
@@ -86,7 +88,7 @@ class PeriodicTaskView(ModelView):
         'task',
         'args',
         'kwargs',
-        'schedule',
+        'schedules',
         'expires',
         'last_run_at',
         'total_run_count',
@@ -99,13 +101,23 @@ class PeriodicTaskView(ModelView):
         return super(ModelView, self).handle_view_exception(exc)
 
 
+class ScheduleView(ModelView):
+
+    form_excluded_columns = ['periodic_tasks']
+
+
 admin = Admin(
     flask,
     name='Celery Task Scheduler',
     template_mode='bootstrap3',
     url='/',
-    index_view=PeriodicTaskView(PeriodicTask, session, endpoint='admin'),
+    index_view=PeriodicTaskView(
+        PeriodicTask, session, endpoint='admin', name='Tasks',
+    ),
 )
+
+admin.add_view(ScheduleView(IntervalSchedule, session, category='Schedules'))
+admin.add_view(ScheduleView(CrontabSchedule, session, category='Schedules'))
 
 
 if __name__ == '__main__':

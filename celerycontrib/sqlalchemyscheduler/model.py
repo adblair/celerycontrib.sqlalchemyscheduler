@@ -1,7 +1,8 @@
 """Adapted from djcelery.models."""
 
-import datetime
 import collections
+import datetime
+import itertools
 import json
 
 import celery.schedules
@@ -82,23 +83,15 @@ class PeriodicTask(Base):
         doc='Task name',
         nullable=False,
     )
-    interval_schedule_id = sqla.Column(
-        sqla.Integer,
-        sqla.ForeignKey('interval_schedule.id'),
-        nullable=True,
-    )
-    interval_schedule = orm.relationship(
+    interval_schedules = orm.relationship(
         'IntervalSchedule',
-        backref=orm.backref('periodic_task', uselist=False),
+        secondary='task_interval_schedules',
+        backref='periodic_tasks',
     )
-    crontab_schedule_id = sqla.Column(
-        sqla.Integer,
-        sqla.ForeignKey('crontab_schedule.id'),
-        nullable=True,
-    )
-    crontab_schedule = orm.relationship(
+    crontab_schedules = orm.relationship(
         'CrontabSchedule',
-        backref=orm.backref('periodic_task', uselist=False),
+        secondary='task_crontab_schedules',
+        backref='periodic_tasks',
     )
     args = sqla.Column(
         sqla.String,
@@ -139,20 +132,11 @@ class PeriodicTask(Base):
     )
     description = sqla.Column(sqla.String, nullable=True)
 
-    def __str__(self):
-        fmt = '{0.name}: {{no schedule}}'
-        if self.interval_schedule:
-            fmt = '{0.name}: {0.interval_schedule}'
-        if self.crontab_schedule:
-            fmt = '{0.name}: {0.crontab_schedule}'
-        return fmt.format(self)
-
     @property
-    def schedule(self):
-        if self.interval_schedule:
-            return self.interval_schedule
-        if self.crontab_schedule:
-            return self.crontab_schedule
+    def schedules(self):
+        return list(
+            itertools.chain(self.interval_schedules, self.crontab_schedules)
+        )
 
     @orm.validates('args')
     def validate_args(self, key, value):
@@ -165,6 +149,38 @@ class PeriodicTask(Base):
         return _validate_json_string(
             value, collections.Mapping, 'kwargs must be a valid JSON object'
         )
+
+    def __str__(self):
+        return self.name
+
+
+task_interval_schedules = sqla.Table(
+    'task_interval_schedules', Base.metadata,
+    sqla.Column(
+        'periodic_task_id',
+        sqla.Integer,
+        sqla.ForeignKey('periodic_task.id'),
+    ),
+    sqla.Column(
+        'interval_schedule_id',
+        sqla.Integer,
+        sqla.ForeignKey('interval_schedule.id'),
+    )
+)
+
+task_crontab_schedules = sqla.Table(
+    'task_crontab_schedules', Base.metadata,
+    sqla.Column(
+        'periodic_task_id',
+        sqla.Integer,
+        sqla.ForeignKey('periodic_task.id'),
+    ),
+    sqla.Column(
+        'crontab_schedule_id',
+        sqla.Integer,
+        sqla.ForeignKey('crontab_schedule.id'),
+    )
+)
 
 
 def _validate_json_string(string, cls, msg, nullable=True):
