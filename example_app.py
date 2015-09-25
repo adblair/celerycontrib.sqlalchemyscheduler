@@ -57,8 +57,6 @@ task_names = list(filter(
 
 
 class PeriodicTaskView(ModelView):
-    create_modal = True
-    edit_modal = True
 
     form_columns = [
         'name',
