@@ -69,14 +69,14 @@ dist: clean
 	ls -l dist
 
 register:
-	python setup.py bdist_wheel register -r devpi
+	python setup.py bdist_wheel register
 
 upload:
-	python setup.py bdist_wheel upload -r devpi
+	python setup.py bdist_wheel upload
 
 release: clean test-all
 	bumpversion release
-	python setup.py bdist_wheel upload -r devpi
+	python setup.py bdist_wheel upload
 	bumpversion --no-tag patch
 	git push --tags
 
