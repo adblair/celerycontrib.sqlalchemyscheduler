@@ -11,6 +11,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.fields import Select2Field
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from wtforms.validators import ValidationError
 
 BROKER_URL = 'amqp://guest@localhost//'
 DATABASE_URL = 'sqlite:///example.sqlite'
@@ -93,6 +94,12 @@ class PeriodicTaskView(ModelView):
         'total_run_count',
         'enabled',
     ]
+
+    def handle_view_exception(self, exc):
+        if isinstance(exc, ValueError):
+            exc = ValidationError(exc)
+        return super(ModelView, self).handle_view_exception(exc)
+
 
 admin = Admin(
     flask,

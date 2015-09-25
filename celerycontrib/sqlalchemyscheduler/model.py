@@ -1,6 +1,8 @@
 """Adapted from djcelery.models."""
 
 import datetime
+import collections
+import json
 
 import celery.schedules
 import sqlalchemy as sqla
@@ -19,7 +21,7 @@ class IntervalSchedule(Base):
     __tablename__ = 'interval_schedule'
 
     every = sqla.Column(sqla.Integer, nullable=False)
-    period = sqla.Column(sqla.String(24))
+    period = sqla.Column(sqla.String(24), nullable=False)
 
     @property
     def schedule(self):
@@ -73,8 +75,13 @@ class PeriodicTask(Base):
         sqla.String(200),
         unique=True,
         doc='Useful description',
+        nullable=False,
     )
-    task = sqla.Column(sqla.String(200), doc='Task name')
+    task = sqla.Column(
+        sqla.String(200),
+        doc='Task name',
+        nullable=False,
+    )
     interval_schedule_id = sqla.Column(
         sqla.Integer,
         sqla.ForeignKey('interval_schedule.id'),
@@ -146,3 +153,29 @@ class PeriodicTask(Base):
             return self.interval_schedule
         if self.crontab_schedule:
             return self.crontab_schedule
+
+    @orm.validates('args')
+    def validate_args(self, key, value):
+        return _validate_json_string(
+            value, collections.Sequence, 'kwargs must be a valid JSON array'
+        )
+
+    @orm.validates('kwargs')
+    def validate_kwargs(self, key, value):
+        return _validate_json_string(
+            value, collections.Mapping, 'kwargs must be a valid JSON object'
+        )
+
+
+def _validate_json_string(string, cls, msg, nullable=True):
+    if nullable and string is None:
+        return string
+    try:
+        obj = json.loads(string)
+    except Exception:
+        raise ValueError(msg)
+    else:
+        if not isinstance(obj, cls):
+            raise ValueError(msg)
+        else:
+            return string
