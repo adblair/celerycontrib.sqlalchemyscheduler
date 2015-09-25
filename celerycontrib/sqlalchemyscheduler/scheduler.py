@@ -28,7 +28,7 @@ class SQLAlchemyScheduler(celery.beat.Scheduler):
         for periodic_task in query:
             yield periodic_task.name, dict(
                 task=periodic_task.task,
-                schedule=periodic_task.schedule,
+                schedule=periodic_task.schedule.schedule,
                 args=json.loads(periodic_task.args or 'null'),
                 kwargs=json.loads(periodic_task.kwargs or 'null'),
                 options=dict(

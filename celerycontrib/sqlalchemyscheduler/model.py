@@ -143,6 +143,6 @@ class PeriodicTask(Base):
     @property
     def schedule(self):
         if self.interval_schedule:
-            return self.interval_schedule.schedule
+            return self.interval_schedule
         if self.crontab_schedule:
-            return self.crontab_schedule.schedule
+            return self.crontab_schedule
