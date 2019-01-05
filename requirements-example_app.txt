@@ -1,4 +1,4 @@
 -r requirements.txt
-Flask==0.10.1
+Flask==0.12.4
 Flask-Admin==1.5.3
 flower==0.8.3
