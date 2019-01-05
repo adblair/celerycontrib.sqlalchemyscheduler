@@ -15,6 +15,7 @@ from sqlalchemy.ext import declarative
 class Base(object):
     id = sqla.Column(sqla.Integer, primary_key=True)
 
+
 Base = declarative.declarative_base(cls=Base)
 
 
@@ -57,7 +58,8 @@ class CrontabSchedule(Base):
 
     @property
     def description(self):
-        rfield = lambda f: f and str(f).replace(' ', '') or '*'
+        def rfield(f):
+            return f and str(f).replace(' ', '') or '*'
         string = '{0} {1} {2} {3} {4}'.format(
             rfield(self.minute), rfield(self.hour), rfield(self.day_of_week),
             rfield(self.day_of_month), rfield(self.month_of_year),
